@@ -1,4 +1,8 @@
-# starter-vue-project
+# web-sample-boot-application-ui-vue-project
+
+This is just a simple project done in vue  
+It shows basic crud, vue components and event processing  
+
 
 ## Project setup
 ```
