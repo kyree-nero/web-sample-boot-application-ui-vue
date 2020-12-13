@@ -7,28 +7,25 @@
 			<p v-else-if="!loading && (!samples || samples.length === 0)"> There is no data </p>
 			
 			<div v-for="sample in samples" :key="sample.id" v-else align="left"> 	
-			
-				<ul 
-					v-show="errors && getErrorsByTypeAndId('update', sample.id).length != 0"  
-					:key="error.id" 
-					v-for="error in getErrorsByTypeAndId('update', sample.id)"><li>{{error.message}}</li></ul>
-			
-				<button type="button" id="delete{{ sample.id }}" 
-						@click="editing = null; remove(sample.id)">Delete</button>
-				<button type="button" id="edit{{ sample.id }}" 
-						@click="openForEdit(sample.id)" 
-						v-show="editing === null" >Edit</button>
-				<button type="button" id="save{{ sample.id }}" 	
-						@click="update(sample)" 
-						v-show="editing != null && editing == sample.id">Save</button>
-				<button type="button" id="cancel{{ sample.id }}" 
-						@click="editing = null; cancelEdit(sample.id)" 
-						v-show="editing != null && editing == sample.id">Cancel</button>
-				<span v-show="editing !=  sample.id">{{ sample.content }}</span> 
-				<input type="text" id="update{{ sample.id }}" 
-					v-model="sample.content" 
-					v-show="editing ==  sample.id"
-					:disabled="editing != sample.id"/>
+				
+				<existingSample 
+					:csrfToken="csrfToken"
+					:sample="sample" 
+					:errors="errors"
+					:editing="editing"
+					@update-editing-event="updateEditingEvent"
+					@clear-errors-by-type-event="clearErrorsByTypeEvent"
+					@handle-error-response-event="handleErrorResponseEvent"
+					@handle-response-event="handleResponseEvent"
+					@update-sample-content-event="updateSampleContentEvent"
+					@load-samples-event="loadSamplesEvent"
+				/>
+				
+				
+				
+
+				
+				
 				
 			</div>
 			<ul v-show="errors && getErrorsByType('add').length != 0"  :key="addError.id" v-for="addError in getErrorsByType('add')"><li>{{addError.message}}</li></ul>
@@ -40,15 +37,20 @@
 </template>
 
 <script>
+import existingSample from './existingsample.vue'
+
 export default {
   name: 'samples',
+  components: {
+    existingSample
+  }, 
   props: {
     msg: String
   }, 
   data(){
 	return {
 		editing: null, 
-		oldValue: null,
+		//oldValue: null,
 		newSampleContent: null,
 		samples: [],
 		csrfToken: null,
@@ -59,7 +61,37 @@ export default {
 	}
   },
   methods: {
-	
+	//event handlers
+	updateSampleContentEvent(id, newContent){
+		this.samples.filter(
+			function(elem){
+				
+				if(elem.id == id){ 
+					console.log(".yyyy " + elem.id);
+					console.log(".yyyy " + elem.content);
+					elem.content = newContent;
+					return elem;
+				}
+			}
+		);
+		
+	},
+	updateEditingEvent(editing){
+		this.editing = editing;
+	},
+	clearErrorsByTypeEvent(type){
+		this.clearErrorsByType(type);
+	},
+	handleErrorResponseEvent(error){
+		this.handleErrorResponse(error);
+	},
+	handleResponseEvent(response, type){
+		this.handleResponse(response, type);
+	},
+	loadSamplesEvent(){
+		console.log('trigger load');
+		this.loadSamples();
+	},
 	//errors
 	clearErrorsByType(type){
 		var errors = this.errors.filter(
@@ -108,8 +140,7 @@ export default {
 				field: data.errors[dataerror].field, 
 				affectedId: this.editing
 			};
-			console.log('---');
-			console.log(error);
+		
 			this.errors.push(error);
 		} 
 		
@@ -123,8 +154,7 @@ export default {
 				type: 'add',
 				field: data.errors[dataerror].field
 			};
-			console.log('---');
-			console.log(error);
+			
 			this.errors.push(error);
 		} 
 	},
@@ -155,36 +185,33 @@ export default {
 
 	
 	//buttons
-	openForEdit(sampleId){
-		this.editing = sampleId;
-		var valObj = this.samples.filter(
-			function(elem){
-				if(elem.id == sampleId){ 
-					return elem;
-				}
+	
+	update(sample){
+		
+		console.log("sample before update " + sample)
+		this.error = null;
+		//this.clearErrorsByType('update');
+		this.$emit("clear-errors-by-type-event", 'update');
+		fetch('/sample/'+sample.id, 
+			{
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-CSRF-TOKEN': this.csrfToken
+				},
+				body: JSON.stringify(sample),
 			}
-		);
+		)
+		.then((response) => {
+			//this.handleResponse(response, 'update');
+			this.$emit("handle-response-event", response, 'update');
+		})
+		.catch((error)=>{
+			//this.handleErrorResponse(error)
+			this.$emit("handle-error-response-event", error);
+			
+		});
 		
-		if(valObj.length > 0){
-			this.oldValue = valObj[0].content;
-		}
-		
-		return;
-	},
-	cancelEdit(sampleId){
-		this.clearErrorsByType('update');
-		var valObj = this.samples.filter(
-			function(elem){
-				if(elem.id == sampleId){ 
-					return elem;
-				}
-			}
-		);
-		
-		if(valObj.length > 0){
-			valObj[0].content = this.oldValue;
-		}
-		return;
 	},
 	add(){
 		this.error = null;
@@ -215,57 +242,8 @@ export default {
 		this.newSampleContent = null;
 		return;
 	}, 
-	update(sample){
-		
-		
-		this.error = null;
-		this.clearErrorsByType('update');
-		fetch('/sample/'+sample.id, 
-			{
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-CSRF-TOKEN': this.csrfToken
-				},
-				body: JSON.stringify(sample),
-			}
-		)
-		.then((response) => {
-            this.handleResponse(response, 'update');
-        })
-        .catch((error)=>{
-			this.handleErrorResponse(error)
-        });
-        
-	},
-	remove(sampleId){
-		this.error = null;
-		console.log('remove item');
-		
-		fetch('/sample/'+sampleId, 
-			{
-				method: 'DELETE',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-CSRF-TOKEN': this.csrfToken
-				}
-			}
-		)
-		.then((response) => {
-            if (response.ok) {
-				setTimeout(() => { console.log("timer done"); }, 2000);
-				this.loadSamples();
-				return response;
-			}else{
-				throw new Error("server side error, please retry")
-			}
-        })
-        .catch((error)=>{
-			this.handleErrorResponse(error)
-        });
-		//this.samples = newSamples;
-		return;
-	},
+	
+	
 	submitForm() {
 		console.log('submit form');
 	}, 
