@@ -8,6 +8,9 @@
             </ul>
 			<button type="button" id="add" @click="add()" align="left">Add</button>
 			<input type="text" id="addContent" v-model="newSampleContent" align="left" />
+            <button type="button" id="cancelAdd{{ sample.id }}" 
+                @click="cancelAdd()" 
+                v-show="newSampleContent != null && newSampleContent.length != 0">Cancel</button>
         </span>
     </base-card>
 </template>
@@ -41,6 +44,16 @@
                 );
                 return errors;
             },
+            cancelAdd(){
+                //this.$emit("update-editing-event", null);
+                this.$emit("clear-errors-by-type-event", 'add');
+                //this.clearErrorsByType('update');
+                
+                this.error = null;
+                //sample.content = this.oldValue;
+                this.newSampleContent = null;
+                return;
+            },
             add(){
                 this.error = null;
                 
@@ -58,9 +71,13 @@
                             content: this.newSampleContent
                         }),
                     }
+                    
                 )
                 .then((response) => {
                     //this.handleResponse(response, 'add');
+                    if (response.ok){
+                        this.newSampleContent = null;
+                    }
                     this.$emit("handle-response-event", response, 'add');
                 })
                 .catch((error)=>{
@@ -70,7 +87,7 @@
                 });
                 
                 //this.samples.push(newObj)
-                this.newSampleContent = null;
+                
                 return;
             }, 
         }
