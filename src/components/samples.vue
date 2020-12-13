@@ -22,21 +22,25 @@
 				/>
 				
 			</div>
-			<base-card>
-				<ul v-show="errors && getErrorsByType('add').length != 0"  :key="addError.id" v-for="addError in getErrorsByType('add')"><li>{{addError.message}}</li></ul>
-				<button type="button" id="add" @click="add()" align="left">Add</button>
-				<input type="text" id="addContent" v-model="newSampleContent" align="left" />
-			</base-card>
+			<newSample 
+				:csrfToken="csrfToken"
+				:errors="errors"
+				@clear-errors-by-type-event="clearErrorsByTypeEvent"
+				@handle-error-response-event="handleErrorResponseEvent"
+				@handle-response-event="handleResponseEvent"
+			/>
 		</form>
 	</div>
 </template>
 
 <script>
 import existingSample from './existingsample.vue'
+import newSample from './newsample.vue'
 
 export default {
   name: 'samples',
   components: {
+	newSample,
     existingSample
   }, 
   props: {
@@ -45,13 +49,10 @@ export default {
   data(){
 	return {
 		editing: null, 
-		//oldValue: null,
-		newSampleContent: null,
 		samples: [],
 		csrfToken: null,
 		csrfTokenHeaderName: 'x-csrf-token', 
 		loading: false, 
-		error: null, 
 		errors: [], 
 	}
   },
@@ -98,16 +99,7 @@ export default {
 		);
 		this.errors = errors;
 	},
-	getErrorsByType(type){
-		var errors = this.errors.filter(
-			function(elem){
-				if(elem.type == type){ 
-					return elem;
-				}
-			}
-		);
-		return errors;
-	},
+	
 	getErrorsByTypeAndId(type, id){
 		var errors = this.errors.filter(
 			function(elem){
@@ -208,36 +200,6 @@ export default {
 		});
 		
 	},
-	add(){
-		this.error = null;
-		
-		this.clearErrorsByType('add');
-		
-		
-		fetch('/sample', 
-			{
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-CSRF-TOKEN': this.csrfToken
-				},
-				body: JSON.stringify({
-					content: this.newSampleContent
-				}),
-			}
-		)
-		.then((response) => {
-            this.handleResponse(response, 'add');
-        })
-        .catch((error)=>{
-			this.handleErrorResponse(error)
-        });
-        
-		//this.samples.push(newObj)
-		this.newSampleContent = null;
-		return;
-	}, 
-	
 	
 	submitForm() {
 		console.log('submit form');
