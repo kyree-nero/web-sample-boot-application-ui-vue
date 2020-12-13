@@ -21,17 +21,12 @@
 					@load-samples-event="loadSamplesEvent"
 				/>
 				
-				
-				
-
-				
-				
-				
 			</div>
-			<ul v-show="errors && getErrorsByType('add').length != 0"  :key="addError.id" v-for="addError in getErrorsByType('add')"><li>{{addError.message}}</li></ul>
-			<button type="button" id="add" @click="add()" align="left">Add</button>
-			<input type="text" id="addContent" v-model="newSampleContent" align="left" />
-			
+			<base-card>
+				<ul v-show="errors && getErrorsByType('add').length != 0"  :key="addError.id" v-for="addError in getErrorsByType('add')"><li>{{addError.message}}</li></ul>
+				<button type="button" id="add" @click="add()" align="left">Add</button>
+				<input type="text" id="addContent" v-model="newSampleContent" align="left" />
+			</base-card>
 		</form>
 	</div>
 </template>

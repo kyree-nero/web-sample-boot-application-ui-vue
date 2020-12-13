@@ -1,29 +1,31 @@
 <template>
-    <span>
-        <ul 
-			v-show="errors && getErrorsByTypeAndId('update', sample.id).length != 0"  
-			:key="error.id" 
-			v-for="error in getErrorsByTypeAndId('update', sample.id)">
-			<li>{{error.message}}</li>
-		</ul>
-        <button type="button" id="delete{{ sample.id }}" 
-						@click="remove(sample.id)">Delete</button>
-        <button type="button" id="edit{{ sample.id }}" 
-						@click="openForEdit(sample)" 
-						v-show="editing === null" >Edit</button>
-        <button type="button" id="save{{ sample.id }}" 	
-						@click="update(sample)" 
-						v-show="editing != null && editing == sample.id">Save</button>
-        <button type="button" id="cancel{{ sample.id }}" 
-                        @click="cancelEdit(sample)" 
-                        v-show="editing != null && editing == sample.id">Cancel</button>
-        <span v-show="editing !=  sample.id">{{ sample.content }}</span> 
-        <input type="text" id="update{{ sample.id }}" 
-                        :value="sample.content" 
-                        @input="updateSampleContent"
-                        v-show="editing ==  sample.id"
-                        :disabled="editing != sample.id"/>
-    </span>
+    <base-card>
+        <span>
+            <ul 
+                v-show="errors && getErrorsByTypeAndId('update', sample.id).length != 0"  
+                :key="error.id" 
+                v-for="error in getErrorsByTypeAndId('update', sample.id)">
+                <li>{{error.message}}</li>
+            </ul>
+            <button type="button" id="delete{{ sample.id }}" 
+                            @click="remove(sample.id)">Delete</button>
+            <button type="button" id="edit{{ sample.id }}" 
+                            @click="openForEdit(sample)" 
+                            v-show="editing === null" >Edit</button>
+            <button type="button" id="save{{ sample.id }}" 	
+                            @click="update(sample)" 
+                            v-show="editing != null && editing == sample.id">Save</button>
+            <button type="button" id="cancel{{ sample.id }}" 
+                            @click="cancelEdit(sample)" 
+                            v-show="editing != null && editing == sample.id">Cancel</button>
+            <span v-show="editing !=  sample.id">{{ sample.content }}</span> 
+            <input type="text" id="update{{ sample.id }}" 
+                            :value="sample.content" 
+                            @input="updateSampleContent"
+                            v-show="editing ==  sample.id"
+                            :disabled="editing != sample.id"/>
+        </span>
+    </base-card>
 </template>
 <script>
     export default {
