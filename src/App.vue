@@ -1,20 +1,18 @@
 <template>
-  <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
   <banner :csrfToken="csrfToken"/>
-  <samples msg="Welcome to Your Vue.js App" @csrf-token-event="csrfTokenEvent"/>
-  
+  <main>
+    <router-view @csrf-token-event="csrfTokenEvent"></router-view>
+  </main>
   
 </template>
 
 <script>
 import banner from './components/banner.vue'
-import samples from './components/samples.vue'
 
 export default {
   name: 'App',
   components: {
     banner,
-    samples
   }, 
   data(){
     return {

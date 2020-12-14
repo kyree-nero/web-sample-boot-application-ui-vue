@@ -1,7 +1,7 @@
 <template>
-	<div align="left">
+	<div align="center">
 		<form @submit.prevent="submitForm">
-			<p>contents:</p>
+			<p>samples:</p>
 			<p v-if="loading">Loading</p>
 			<p v-else-if="!loading && error"> {{ this.error }} </p>
 			<p v-else-if="!loading && (!samples || samples.length === 0)"> There is no data </p>
@@ -276,6 +276,9 @@ p {
   color: white;
   padding: 0.5rem;
   border-radius: 25px;
+
+  max-width: 40rem;
+  text-align: left;
 }
 
 #input {
