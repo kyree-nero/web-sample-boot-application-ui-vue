@@ -140,10 +140,11 @@
                     if (response.ok) {
                         setTimeout(() => { console.log("timer done"); }, 2000);
                         this.$emit("load-samples-event");
-                        console.log("emit...");
+                        this.$store.commit('incrementByType', {type: 'deletes'});
                         //this.loadSamples();
                         return response;
                     }else{
+                        this.$store.commit('increment');
                         throw new Error("server side error, please retry")
                     }
                 })

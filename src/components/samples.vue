@@ -148,20 +148,25 @@ export default {
 	handleResponse(response, type){
 			console.log(type);
 			if (response.ok && type == 'add') {
+
 				this.handleOkResponseWithReload(response);
+				this.$store.commit('incrementByType', {type: 'adds'});
 			}
 			else if (response.ok && type == 'update') {
 				this.editing = null;
 				this.handleOkResponseWithReload(response);
+				this.$store.commit('incrementByType', {type: 'updates'});
 			}
 			else if(response.status == 400 && type == 'add'){
 				response.json().then(this.handleBadAddRequest);
+				this.$store.commit('increment');
 			}
 			else if(response.status == 400 && type == 'update'){
-				
 				response.json().then(this.handleBadUpdateRequest);
+				this.$store.commit('increment');
 			}
 			else{
+				this.$store.commit('increment');
 				throw new Error("server side error, please retry")
 			}
 	},
